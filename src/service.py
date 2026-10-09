@@ -26,11 +26,24 @@ class RequestService:
     def create_request(self, data: RequestCreate):
         if not data.title.strip():
             raise ValidationError("Тема обязательна")
+        if self.repo.get_category(data.category_id) is None:
+            raise ValidationError(f"Категория {data.category_id} не существует")
+        if self.repo.get_user(data.author_id) is None:
+            raise ValidationError(f"Автор {data.author_id} не существует")
         new_id = self.repo.create(data.model_dump())
         return self.get_request(new_id)
 
     def update_request(self, request_id: int, data: RequestUpdate):
         self.get_request(request_id)
+        if data.category_id is not None:
+            if self.repo.get_category(data.category_id) is None:
+                raise ValidationError(f"Категория {data.category_id} не существует")
+        if data.assignee_id is not None:
+            if self.repo.get_user(data.assignee_id) is None:
+                raise ValidationError(f"Исполнитель {data.assignee_id} не существует")
+        if data.status_id is not None:
+            if self.repo.get_status(data.status_id) is None:
+                raise ValidationError(f"Статус {data.status_id} не существует")
         self.repo.update(request_id, data.model_dump(exclude_none=True))
         return self.get_request(request_id)
 

@@ -20,13 +20,16 @@ class RequestRepository:
 
     def get(self, request_id: int):
         with get_connection() as conn:
-            row = conn.execute("SELECT * FROM Requests WHERE Id = ?", (request_id,)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM Requests WHERE Id = ?", (request_id,)
+            ).fetchone()
             return dict(row) if row else None
 
     def create(self, data: dict) -> int:
         with get_connection() as conn:
             cur = conn.execute(
-                "INSERT INTO Requests (Title, Description, AuthorId, StatusId, CategoryId) VALUES (?, ?, ?, 1, ?)",
+                "INSERT INTO Requests (Title, Description, AuthorId, StatusId, CategoryId) "
+                "VALUES (?, ?, ?, 1, ?)",
                 (data["title"], data.get("description"), data["author_id"], data["category_id"]),
             )
             conn.commit()
@@ -38,8 +41,10 @@ class RequestRepository:
         for k in ("title", "description", "category_id", "status_id", "assignee_id"):
             if k in data and data[k] is not None:
                 col = {
-                    "title": "Title", "description": "Description",
-                    "category_id": "CategoryId", "status_id": "StatusId",
+                    "title": "Title",
+                    "description": "Description",
+                    "category_id": "CategoryId",
+                    "status_id": "StatusId",
                     "assignee_id": "AssigneeId",
                 }[k]
                 fields.append(f"{col} = ?")
@@ -58,11 +63,35 @@ class RequestRepository:
             conn.commit()
             return cur.rowcount > 0
 
+    # --- вспомогательные методы для проверки FK ---
+
+    def get_category(self, category_id: int):
+        with get_connection() as conn:
+            return conn.execute(
+                "SELECT * FROM Categories WHERE Id = ?", (category_id,)
+            ).fetchone()
+
+    def get_user(self, user_id: int):
+        with get_connection() as conn:
+            return conn.execute(
+                "SELECT * FROM Users WHERE Id = ?", (user_id,)
+            ).fetchone()
+
+    def get_status(self, status_id: int):
+        with get_connection() as conn:
+            return conn.execute(
+                "SELECT * FROM Statuses WHERE Id = ?", (status_id,)
+            ).fetchone()
+
 
 class UserRepository:
     def list(self):
         with get_connection() as conn:
-            return [dict(r) for r in conn.execute("SELECT Id, Login, FullName, RoleId FROM Users").fetchall()]
+            return [
+                dict(r) for r in conn.execute(
+                    "SELECT Id, Login, FullName, RoleId FROM Users"
+                ).fetchall()
+            ]
 
 
 class StatusRepository:

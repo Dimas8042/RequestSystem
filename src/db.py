@@ -1,7 +1,8 @@
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent.parent / "db" / "requests.db"
+BASE_DIR = Path(__file__).resolve().parent.parent
+DB_PATH = BASE_DIR / "db" / "requests.db"
 
 
 def get_connection() -> sqlite3.Connection:
@@ -12,10 +13,17 @@ def get_connection() -> sqlite3.Connection:
 
 
 def init_db() -> None:
-    schema = (Path(__file__).resolve().parent.parent / "db" / "schema.sql").read_text(encoding="utf-8")
-    seed = (Path(__file__).resolve().parent.parent / "db" / "seed.sql").read_text(encoding="utf-8")
+    """Создаёт БД и заливает данные только если файла ещё нет."""
+    if DB_PATH.exists():
+        print(f"БД уже существует: {DB_PATH}")
+        return
+
+    schema = (BASE_DIR / "db" / "schema.sql").read_text(encoding="utf-8")
+    seed = (BASE_DIR / "db" / "seed.sql").read_text(encoding="utf-8")
+
     conn = get_connection()
     conn.executescript(schema)
     conn.executescript(seed)
     conn.commit()
     conn.close()
+    print(f"БД создана и заполнена: {DB_PATH}")

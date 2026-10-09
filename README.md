@@ -32,3 +32,13 @@ docker compose up -d
 4. cp .env.example .env
 5. docker compose up -d
 6. Открыть http://<ip>:8000/docs
+
+## Тестирование
+
+Установка зависимостей:
+pip install pytest httpx
+
+Запуск автотестов:
+pytest testing/lab10/ -v
+
+Ожидаемый результат: 13 passed.
