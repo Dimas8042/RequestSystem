@@ -5,3 +5,10 @@ __pycache__/
 .vscode/
 *.db
 .env
+# Word temp files
+~$*.docx
+~$*.doc
+
+# Reports 
+*.docx
+*.doc
